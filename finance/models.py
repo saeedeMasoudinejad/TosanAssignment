@@ -4,6 +4,7 @@ import random
 from django.db import models
 
 from core.base_models import BaseModelClass
+from django.contrib.auth.models import User
 
 
 class Wallet(BaseModelClass):
@@ -13,7 +14,7 @@ class Wallet(BaseModelClass):
         default=0
     )
     owner = models.ForeignKey(
-        to='user.User',
+        to=User,
         on_delete=models.PROTECT,
         related_query_name='wallet',
         related_name='users'
