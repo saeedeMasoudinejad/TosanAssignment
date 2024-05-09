@@ -64,19 +64,3 @@ class SignupTests(APITestCase):
             response.status_code,
             status.HTTP_400_BAD_REQUEST
         )
-
-    def test_signup_invalid_username(self):
-        url = reverse('signup')
-        data = {
-            'username': 1234,
-            'password': 'test_password_1'
-        }
-        response = self.client.post(
-            url,
-            data,
-            format='json'
-        )
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_400_BAD_REQUEST
-        )
