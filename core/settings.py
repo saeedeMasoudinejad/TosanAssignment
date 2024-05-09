@@ -140,6 +140,7 @@ SPECTACULAR_SETTINGS = {
                    'perform deposits, withdrawals, and refunds.',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'SCHEMA_PATH_PREFIX': '/api/',
     # OTHER SETTINGS
 }
 
