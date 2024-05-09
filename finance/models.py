@@ -1,25 +1,36 @@
 import os
 import random
 
+from django.core.validators import MinValueValidator
 from django.db import models
+from django.utils import timezone
 
 from core.base_models import BaseModelClass
 from django.contrib.auth.models import User
 
+from core.choice_type_fields import TransactionStatusChoice
+
 
 class Wallet(BaseModelClass):
-    # To prevent computational errors, we consider numbers as integers and only convert them to decimal for display
-    # (assuming that balances will not exceed four decimal places).
+    # TODO:To prevent computational errors, we consider numbers as integers and only convert them to decimal for display
+    # Assuming that balances will not exceed four decimal places.
     # NOTE: Don't implement the charge the wallet,Just set the default value.
     # TODO: type of this field and way of convert should be correct
-    balance = models.PositiveIntegerField(
+    balance = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
         default=os.environ['WALLET_BALANCE']
     )
+    # temporary_balance = models.DecimalField(
+    #     max_digits=10,
+    #     decimal_places=2,
+    #     default=os.environ['WALLET_BALANCE']
+    # )
     owner = models.ForeignKey(
         to=User,
         on_delete=models.PROTECT,
         related_query_name='wallet',
-        related_name='users'
+        related_name='wallets'
     )
 
     _wallet_number = models.CharField(
@@ -32,9 +43,9 @@ class Wallet(BaseModelClass):
         default=True,
     )
 
-    @property
-    def real_balance(self):
-        return self.balance * 10 ^ int(os.environ['DECIMAL_PLACES'])
+    # @property
+    # def real_balance(self):
+    #     return self.balance * 10 ^ int(os.environ['DECIMAL_PLACES'])
 
     @staticmethod
     def generate_unique_number():
@@ -60,3 +71,48 @@ class Wallet(BaseModelClass):
 
     def __str__(self):
         return f'{self.owner} - {self.wallet_number}'
+
+
+class Transaction(BaseModelClass):
+    origin = models.ForeignKey(
+        to=Wallet,
+        related_name='origin_transactions',
+        related_query_name='origin_transaction',
+        on_delete=models.PROTECT
+    )
+    destination = models.ForeignKey(
+        to=Wallet,
+        related_name='destination_transactions',
+        related_query_name='destination_transaction',
+        on_delete=models.PROTECT)
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(1000)]
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=TransactionStatusChoice.choices,
+        default=TransactionStatusChoice.PENDING
+    )
+    transaction_type = models.CharField(
+        max_length=10,
+        choices=TransactionStatusChoice.choices
+    )
+
+
+    @classmethod
+    def is_daily_transfer_limit_exceeded(cls, sender_wallet, amount):
+        today = timezone.now().date()
+        daily_transfers = cls.objects.filter(
+            sender_wallet=sender_wallet,
+            created_at__date=today,
+            status=TransactionStatusChoice.COMPLETE
+        )
+        total_count = daily_transfers.count()
+        total_amount = daily_transfers.aggregate(models.Sum('amount'))['amount__sum'] or 0
+        max_transfers_per_day = int(os.environ.get('MAX_TRANSFERS_PER_DAY'))
+        max_transfer_value_per_day = int(os.environ.get('MAX_TRANSFERS_VALUE_PER_DAY'))
+        if total_count >= max_transfers_per_day or total_amount + amount > max_transfer_value_per_day:
+            return True
+        return False
