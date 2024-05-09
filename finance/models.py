@@ -10,8 +10,10 @@ from django.contrib.auth.models import User
 class Wallet(BaseModelClass):
     # To prevent computational errors, we consider numbers as integers and only convert them to decimal for display
     # (assuming that balances will not exceed four decimal places).
+    # NOTE: Don't implement the charge the wallet,Just set the default value.
+    # TODO: type of this field and way of convert should be correct
     balance = models.PositiveIntegerField(
-        default=0
+        default=1000000
     )
     owner = models.ForeignKey(
         to=User,
@@ -26,6 +28,9 @@ class Wallet(BaseModelClass):
         null=False,
         blank=False,
     )
+    is_active = models.BooleanField(
+        default=True,
+    )
 
     @property
     def real_balance(self):
@@ -38,15 +43,16 @@ class Wallet(BaseModelClass):
         if checksum == 10:
             checksum = 0
         eight_digit_number = int(str(six_digit_number) + str(checksum))
-        return eight_digit_number
+        return str(eight_digit_number)
 
     @property
     def wallet_number(self):
         return self._wallet_number
 
     def save(self, *args, **kwargs):
-        _wallet_number = self.generate_unique_number()
-        return super().save(self._wallet_number)
+        if not self.wallet_number:
+            self._wallet_number = self.generate_unique_number()
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Wallet'
