@@ -13,7 +13,7 @@ class Wallet(BaseModelClass):
     # NOTE: Don't implement the charge the wallet,Just set the default value.
     # TODO: type of this field and way of convert should be correct
     balance = models.PositiveIntegerField(
-        default=1000000
+        default=os.environ['WALLET_BALANCE']
     )
     owner = models.ForeignKey(
         to=User,
