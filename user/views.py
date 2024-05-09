@@ -1,10 +1,12 @@
-from rest_framework import status
+from django.contrib.auth.models import User
+from rest_framework import status, mixins
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from user.serializers import UserSerializer
+from user.serializers import UserSerializer, ProfileReadOnlySerializer
 
 
 class UserSignupView(
@@ -32,3 +34,13 @@ class UserSignupView(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class ProfileViewSet(
+    mixins.RetrieveModelMixin,
+    GenericViewSet
+):
+    def get_object(self):
+        return self.request.user
+
+    serializer_class = ProfileReadOnlySerializer
