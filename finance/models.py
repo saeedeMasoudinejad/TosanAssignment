@@ -1,7 +1,8 @@
 import os
 import random
+from decimal import Decimal, ROUND_DOWN
 
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -9,23 +10,20 @@ from core.base_models import BaseModelClass
 from django.contrib.auth.models import User
 
 from core.choice_type_fields import TransactionStatusChoice
+from core.settings import INITIAL_WALLET_BALANCE, MAX_TRANSFERS_VALUE_PER_DAY, MAX_TRANSFERS_PER_DAY
+from core.utils import convertor
 
 
 class Wallet(BaseModelClass):
-    # TODO:To prevent computational errors, we consider numbers as integers and only convert them to decimal for display
+    # To prevent computational errors, we consider numbers as integers and only convert them to decimal for display
     # Assuming that balances will not exceed four decimal places.
     # NOTE: Don't implement the charge the wallet,Just set the default value.
-    # TODO: type of this field and way of convert should be correct
-    balance = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=os.environ['WALLET_BALANCE']
+    _balance = models.BigIntegerField(
+        default=INITIAL_WALLET_BALANCE,
+        validators=[MinValueValidator(0), ],
+        null=False,
+        blank=False
     )
-    # temporary_balance = models.DecimalField(
-    #     max_digits=10,
-    #     decimal_places=2,
-    #     default=os.environ['WALLET_BALANCE']
-    # )
     owner = models.ForeignKey(
         to=User,
         on_delete=models.PROTECT,
@@ -43,18 +41,12 @@ class Wallet(BaseModelClass):
         default=True,
     )
 
-    # @property
-    # def real_balance(self):
-    #     return self.balance * 10 ^ int(os.environ['DECIMAL_PLACES'])
-
-    @staticmethod
-    def generate_unique_number():
-        six_digit_number = random.randint(100000, 999999)
-        checksum = 10 - sum(int(digit) for digit in str(six_digit_number)) % 10
-        if checksum == 10:
-            checksum = 0
-        eight_digit_number = int(str(six_digit_number) + str(checksum))
-        return str(eight_digit_number)
+    @property
+    def balance(self):
+        return convertor(
+            self._balance,
+            'decimal'
+        )
 
     @property
     def wallet_number(self):
@@ -74,6 +66,12 @@ class Wallet(BaseModelClass):
 
 
 class Transaction(BaseModelClass):
+    transaction_number = models.CharField(
+        max_length=8,
+        unique=True,
+        null=False,
+        blank=False,
+    )
     origin = models.ForeignKey(
         to=Wallet,
         related_name='origin_transactions',
@@ -85,9 +83,9 @@ class Transaction(BaseModelClass):
         related_name='destination_transactions',
         related_query_name='destination_transaction',
         on_delete=models.PROTECT)
-    amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
+    _amount = models.BigIntegerField(
+        null=False,
+        blank=False,
         validators=[MinValueValidator(1000)]
     )
     status = models.CharField(
@@ -100,19 +98,43 @@ class Transaction(BaseModelClass):
         choices=TransactionStatusChoice.choices
     )
 
+    @property
+    def amount(self):
+        return convertor(
+            self._amount,
+            'decimal'
+        )
 
     @classmethod
-    def is_daily_transfer_limit_exceeded(cls, sender_wallet, amount):
+    def is_daily_transfer_limit_exceeded(cls, origin_wallet, amount):
         today = timezone.now().date()
         daily_transfers = cls.objects.filter(
-            sender_wallet=sender_wallet,
+            origin=origin_wallet,
             created_at__date=today,
             status=TransactionStatusChoice.COMPLETE
         )
         total_count = daily_transfers.count()
-        total_amount = daily_transfers.aggregate(models.Sum('amount'))['amount__sum'] or 0
-        max_transfers_per_day = int(os.environ.get('MAX_TRANSFERS_PER_DAY'))
-        max_transfer_value_per_day = int(os.environ.get('MAX_TRANSFERS_VALUE_PER_DAY'))
-        if total_count >= max_transfers_per_day or total_amount + amount > max_transfer_value_per_day:
+        total_amount = daily_transfers.aggregate(
+            models.Sum('_amount')
+        )['_amount__sum'] or 0
+        max_transfers_per_day = MAX_TRANSFERS_PER_DAY
+        max_transfer_value_per_day = MAX_TRANSFERS_VALUE_PER_DAY
+        if total_count >= max_transfers_per_day or \
+                total_amount + amount > max_transfer_value_per_day:
             return True
         return False
+
+    def save(self, *args, **kwargs):
+        if not self.transaction_number:
+            self.transaction_number = self.generate_unique_number()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = 'Transaction'
+        verbose_name_plural = 'Transactions'
+        ordering = (
+            '-updated_at',
+        )
+
+    def __str__(self):
+        return f'{self.origin.owner.username} - {self.destination.owner.username} - {self.transaction_number}'
