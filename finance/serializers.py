@@ -1,6 +1,7 @@
 from django.core.validators import MinValueValidator
 from rest_framework import serializers
 
+from core.choice_type_fields import TransactionTypeChoice
 from finance.models import Wallet, Transaction
 
 
@@ -8,42 +9,42 @@ class WalletModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wallet
         fields = (
-            'owner',
             'balance',
-            'wallet_number'
+            'wallet_number',
+            'is_active',
         )
         read_only_fields = (
             'balance',
             'wallet_number',
+            'is_active',
         )
 
 
 class TransactionWriteOnlySerializer(serializers.Serializer):
-    sender_wallet_number = serializers.CharField()
-    receiver_wallet_number = serializers.CharField()
+    origin_wallet_number = serializers.CharField(required=True)
+    destination_wallet_number = serializers.CharField(required=True)
     amount = serializers.DecimalField(
-        max_digits=10,
+        max_digits=15,
         decimal_places=2,
         validators=[MinValueValidator(1000)]
+    )
+    transaction_type = serializers.ChoiceField(
+        choices=TransactionTypeChoice,
+        required=True
     )
 
 
 class TransactionReadOnlyModelSerializer(serializers.ModelSerializer):
-    sender_wallet = WalletModelSerializer(read_only=True)
-    receiver_wallet = WalletModelSerializer(read_only=True)
-    # transaction_type = serializers.SerializerMethodField()
+    origin = WalletModelSerializer(read_only=True)
+    destination = WalletModelSerializer(read_only=True)
+
     class Meta:
         model = Transaction
         fields = (
-            'updated_at',
-            'sender_wallet',
-            'receiver_wallet',
+            'transaction_number',
+            'origin',
+            'destination',
             'amount',
-            # 'transaction_type',
-        )
+            'transaction_type',
 
-    # def get_transaction_type(self,
-    #                          obj)
-    #     if obj.sender_wallet == self.context['request'].user:
-    #         transaction_type = 'withdrew'
-    #     else
+        )
