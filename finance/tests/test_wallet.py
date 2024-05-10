@@ -1,10 +1,10 @@
-import os
-
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth.models import User
-from .models import Wallet
+
+from core.settings import INITIAL_WALLET_BALANCE
+from finance.models import Wallet
 
 
 class WalletCreationTest(APITestCase):
@@ -50,8 +50,8 @@ class WalletCreationTest(APITestCase):
             self.user_1
         )
         self.assertEqual(
-            wallet.balance,
-            int(os.environ['WALLET_BALANCE'])
+            wallet._balance,
+            INITIAL_WALLET_BALANCE
         )
 
     def test_wallet_creation_user_has_wallet(self):
