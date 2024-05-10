@@ -148,3 +148,10 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
 }
+
+INITIAL_WALLET_BALANCE = int(os.environ['INITIAL_WALLET_BALANCE']) * \
+                         (10 ** int(os.environ['MAX_DECIMAL_PLACES']))
+MAX_TRANSFERS_VALUE_PER_DAY = int(os.environ['MAX_TRANSFERS_VALUE_PER_DAY']) * \
+                              (10 ** int(os.environ['MAX_DECIMAL_PLACES']))
+
+MAX_TRANSFERS_PER_DAY = int(os.environ['MAX_TRANSFERS_PER_DAY'])
