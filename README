@@ -6,3 +6,4 @@
 ## Usage
 1.Access the API at http://localhost:8000/
 2.Use http://localhost:8000/schema/swagger-ui/
+3.SetUp database name or constance value just change on .env file.
