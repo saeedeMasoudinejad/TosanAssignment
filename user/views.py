@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from rest_framework import status, mixins
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -13,12 +12,10 @@ class UserSignupView(
     APIView
 ):
     permission_classes = [AllowAny]
+    serializer_class = UserSerializer
 
-    def post(
-            self,
-            request
-    ):
-        serializer = UserSerializer(
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(
             data=request.data
         )
         if serializer.is_valid():
@@ -40,7 +37,7 @@ class ProfileViewSet(
     mixins.RetrieveModelMixin,
     GenericViewSet
 ):
+    serializer_class = ProfileReadOnlySerializer
+
     def get_object(self):
         return self.request.user
-
-    serializer_class = ProfileReadOnlySerializer
