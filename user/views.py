@@ -14,7 +14,7 @@ class UserSignupView(
     permission_classes = [AllowAny]
     serializer_class = UserSerializer
 
-    def create(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(
             data=request.data
         )
