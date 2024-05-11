@@ -2,6 +2,7 @@
 2. Active the virtual environment 'source venv/bin/activate"
 3. Install dependencies with "pip install -r  requirements"
 4. Apply database migrations with "python manage.py migrate"
+5. Run the project with "python manage.py runserver" or set up the run configuration at your IDE
 
 ## Usage
 1.Access the API at http://localhost:8000/
