@@ -1,8 +1,4 @@
-import os
-import random
-from decimal import Decimal, ROUND_DOWN
-
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -10,7 +6,11 @@ from core.base_models import BaseModelClass
 from django.contrib.auth.models import User
 
 from core.choice_type_fields import TransactionStatusChoice
-from core.settings import INITIAL_WALLET_BALANCE, MAX_TRANSFERS_VALUE_PER_DAY, MAX_TRANSFERS_PER_DAY
+from core.settings import (
+    INITIAL_WALLET_BALANCE,
+    MAX_TRANSFERS_VALUE_PER_DAY,
+    MAX_TRANSFERS_PER_DAY
+)
 from core.utils import convertor
 
 
@@ -96,6 +96,13 @@ class Transaction(BaseModelClass):
     transaction_type = models.CharField(
         max_length=10,
         choices=TransactionStatusChoice.choices
+    )
+    original_transaction = models.OneToOneField(
+        to='self',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name='refund_transactions'
     )
 
     @property
