@@ -29,6 +29,10 @@ its transaction ID.
 or both can initiate the refund?
 
 ##NOTE
+- Some improvements that I could make for better functionality are listed in the TODOs.
+- Kept all migrations to make the database design process somewhat visible.
+- The ambiguity in the transfer section prevented me from designing the methods properly, and it's not ideal for me. 
+- It hasn't been implemented in the correct pattern.
 
 
 
