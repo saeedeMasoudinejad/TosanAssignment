@@ -6,3 +6,4 @@ class MessageText:
     WalletNumberIsNotBelong = _("This wallet does not belong to you")
     WalletNumberNotFound = _("Wallet with this number does not")
     DailyTransferLimitExceeded = _("Daily transfer limit exceed.")
+    TransactionIsNotRefunded = _("Transaction is not refunded or has been.")
