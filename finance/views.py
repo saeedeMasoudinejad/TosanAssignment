@@ -47,6 +47,8 @@ class TransactionViewSet(
     serializer_class = TransactionWriteOnlySerializer
     queryset = Transaction.objects.all()
 
+    # TODO: Handle Refund permission.
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
