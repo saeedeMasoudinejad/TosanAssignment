@@ -29,22 +29,38 @@ class TransactionWriteOnlySerializer(serializers.Serializer):
         validators=[MinValueValidator(1000)]
     )
     transaction_type = serializers.ChoiceField(
-        choices=TransactionTypeChoice,
+        choices=[
+            TransactionTypeChoice.DEPOSITED,
+            TransactionTypeChoice.WITHDRAWAL
+        ],
         required=True
     )
 
 
 class TransactionReadOnlyModelSerializer(serializers.ModelSerializer):
     origin = WalletModelSerializer(read_only=True)
-    destination = WalletModelSerializer(read_only=True)
+    destination = serializers.PrimaryKeyRelatedField(source='destination.wallet_number', read_only=True)
+    transaction_type = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Transaction
         fields = (
             'transaction_number',
+            'updated_at',
             'origin',
             'destination',
             'amount',
             'transaction_type',
-
+            'status'
         )
+
+    def get_transaction_type(self, obj):
+        if 'wallet_number' in self.context and \
+                obj.transaction_type != TransactionTypeChoice.REFUNDED:
+            if obj.origin.wallet_number == self.context['wallet_number']:
+                transaction_type = TransactionTypeChoice.WITHDRAWAL
+            else:
+                transaction_type = TransactionTypeChoice.DEPOSITED
+        else:
+            transaction_type = obj.transaction_type
+        return transaction_type
