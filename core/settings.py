@@ -155,3 +155,7 @@ MAX_TRANSFERS_VALUE_PER_DAY = int(os.environ['MAX_TRANSFERS_VALUE_PER_DAY']) * \
                               (10 ** int(os.environ['MAX_DECIMAL_PLACES']))
 
 MAX_TRANSFERS_PER_DAY = int(os.environ['MAX_TRANSFERS_PER_DAY'])
+
+PAGE_SIZE = os.environ['PAGE_SIZE']
+
+APPEND_SLASH = True
