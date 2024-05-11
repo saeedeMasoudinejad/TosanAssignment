@@ -1,13 +1,14 @@
-1. create a virtual environment with "python3 -m venv .venv"
+1. clone the Https : https://github.com/saeedeMasoudinejad/TosanAssignment.git 
+2. create a virtual environment with "python3 -m venv .venv"
 2. Active the virtual environment 'source venv/bin/activate"
 3. Install dependencies with "pip install -r  requirements"
 4. Apply database migrations with "python manage.py migrate"
 5. Run the project with "python manage.py runserver" or set up the run configuration at your IDE
 
 ## Usage
-1.Access the API at http://localhost:8000/
-2.Use http://localhost:8000/schema/swagger-ui/
-3.SetUp database name or constance value just change on .env file.
+1. Access the API at http://localhost:8000/
+2. Use http://localhost:8000/schema/swagger-ui/
+3. SetUp database name or constance value just change on .env file.
 
 ## Scenario Questions:
 ## Transfer
