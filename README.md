@@ -1,3 +1,4 @@
+## SETUP
 1. clone the Https : https://github.com/saeedeMasoudinejad/TosanAssignment.git 
 2. create a virtual environment with "python3 -m venv .venv"
 2. Active the virtual environment 'source venv/bin/activate"
