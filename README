@@ -1,0 +1,8 @@
+1. create a virtual environment with "python3 -m venv .venv"
+2. Active the virtual environment 'source venv/bin/activate."
+3. Install dependencies with "pip install -r  requirements.txt."
+4. Apply database migrations with "python manage.py migrate."
+
+## Usage
+1.Access the API at http://localhost:8000/
+2.Use http://localhost:8000/schema/swagger-ui/
